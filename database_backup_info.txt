@@ -1,0 +1,31 @@
+VITAL 2.0 - Database Backup Information
+======================================
+
+Для создания полного бэкапа базы данных выполните следующие шаги:
+
+1. Убедитесь, что PostgreSQL запущен и доступен
+2. Найдите настройки подключения к базе данных в файле .env
+3. Выполните команду создания дампа:
+
+   pg_dump -h localhost -p 5432 -U your_username -d your_database > vital2.0-database-backup.sql
+
+   Замените:
+   - localhost - на ваш хост базы данных
+   - 5432 - на ваш порт
+   - your_username - на имя пользователя БД
+   - your_database - на имя базы данных
+
+4. Альтернативно, используйте pgAdmin или другой клиент PostgreSQL для экспорта
+
+Важные таблицы для бэкапа:
+- users (пользователи системы)
+- specialties (медицинские специальности)
+- patients (пациенты)
+- consultations (консультации)
+- notifications (уведомления)
+- favorites (избранное)
+
+После создания дампа поместите файл в эту папку backup/
+
+Для восстановления используйте:
+psql -U username -d database_name -f vital2.0-database-backup.sql
