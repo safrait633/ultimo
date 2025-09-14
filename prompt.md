@@ -55,7 +55,7 @@ GRANT ALL PRIVILEGES ON DATABASE vital2_db TO vital_user;
 ### 2. Настройте переменные окружения:
 Отредактируйте файл `.env` в корне проекта:
 ```env
-DATABASE_URL=postgresql://vital_user:your_secure_password@localhost:5432/vital2_db
+DATABASE_URL=postgresql://vital_user:your_secure_password@localhost:5433/vital2_db
 JWT_SECRET=your_jwt_secret_key_here
 JWT_REFRESH_SECRET=your_refresh_secret_key_here
 NODE_ENV=development

@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: vital2-postgres
+    environment:
+      POSTGRES_DB: vital2_db
+      POSTGRES_USER: vital_user
+      POSTGRES_PASSWORD: vital_password_2024
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - vital-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vital_user -d vital2_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL Database (дополнительная БД)
+  mysql:
+    image: mysql:8.0
+    container_name: vital2-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: vital_password_2024
+      MYSQL_DATABASE: vital2_mysql_db
+      MYSQL_USER: vital_mysql_user
+      MYSQL_PASSWORD: vital_password_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-mysql:/docker-entrypoint-initdb.d
+    networks:
+      - vital-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pvital_password_2024"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # VITAL 2.0 Application
+  vital-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vital2-app
+    environment:
+      DATABASE_URL: postgresql://vital_user:vital_password_2024@postgres:5432/vital2_db
+      JWT_SECRET: vital_super_secure_jwt_secret_key_2024_production
+      JWT_REFRESH_SECRET: vital_refresh_secret_key_2024_production
+      NODE_ENV: development
+      PORT: 8080
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      REPLIT_DB_URL: file://./replit_db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - vital-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: npm run dev
+
+volumes:
+  postgres_data:
+    driver: local
+  mysql_data:
+    driver: local
+
+networks:
+  vital-network:
+    driver: bridge
